@@ -14,11 +14,14 @@ const fileInput = document.getElementById('fileInput');
 const resultDiv = document.getElementById('result');
 const errorDiv = document.getElementById('error');
 const receiveBtn = document.getElementById('receiveBtn');
+const uploadProgress = document.getElementById('uploadProgress');
 
-sendForm.onsubmit = async (e) => {
+sendForm.onsubmit = (e) => {
   e.preventDefault();
   resultDiv.textContent = '';
   errorDiv.textContent = '';
+  uploadProgress.value = 0;
+  uploadProgress.style.display = 'none';
   const formData = new FormData();
   if (fileInput.files.length > 0) {
     formData.append('file', fileInput.files[0]);
@@ -28,20 +31,30 @@ sendForm.onsubmit = async (e) => {
     errorDiv.textContent = 'Please enter data or select a file.';
     return;
   }
-  try {
-    const res = await fetch(apiBase + '/send', {
-      method: 'POST',
-      body: formData
-    });
-    const data = await res.json();
-    if (res.ok) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', apiBase + '/send', true);
+  xhr.upload.onprogress = function (event) {
+    if (event.lengthComputable) {
+      const percent = Math.round((event.loaded / event.total) * 100);
+      uploadProgress.value = percent;
+      uploadProgress.style.display = 'block';
+    }
+  };
+  xhr.onload = function () {
+    uploadProgress.style.display = 'none';
+    if (xhr.status >= 200 && xhr.status < 300) {
       resultDiv.textContent = 'Data sent successfully!';
     } else {
-      errorDiv.textContent = data.message || 'Send failed.';
+      let data;
+      try { data = JSON.parse(xhr.responseText); } catch (e) { data = {}; }
+      errorDiv.textContent = (data && data.message) ? data.message : 'Send failed.';
     }
-  } catch (err) {
+  };
+  xhr.onerror = function () {
+    uploadProgress.style.display = 'none';
     errorDiv.textContent = 'Network error.';
-  }
+  };
+  xhr.send(formData);
 };
 
 receiveBtn.onclick = async () => {
