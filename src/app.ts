@@ -13,9 +13,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Multer middleware for file uploads (attach to req.file/req.files)
-const upload = multer();
-app.use(upload.single('file'));
+
 
 setDataRoutes(app);
 
