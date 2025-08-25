@@ -15,13 +15,16 @@ const resultDiv = document.getElementById('result');
 const errorDiv = document.getElementById('error');
 const receiveBtn = document.getElementById('receiveBtn');
 const uploadProgress = document.getElementById('uploadProgress');
+const uploadPercent = document.getElementById('uploadPercent');
 
 sendForm.onsubmit = (e) => {
   e.preventDefault();
   resultDiv.textContent = '';
   errorDiv.textContent = '';
   uploadProgress.value = 0;
-  uploadProgress.style.display = 'none';
+  uploadProgress.style.display = 'block';
+  uploadPercent.textContent = '0%';
+  uploadPercent.style.display = 'inline';
   const formData = new FormData();
   if (fileInput.files.length > 0) {
     formData.append('file', fileInput.files[0]);
@@ -29,6 +32,7 @@ sendForm.onsubmit = (e) => {
     formData.append('content', dataInput.value.trim());
   } else {
     errorDiv.textContent = 'Please enter data or select a file.';
+    uploadProgress.style.display = 'none';
     return;
   }
   const xhr = new XMLHttpRequest();
@@ -37,11 +41,16 @@ sendForm.onsubmit = (e) => {
     if (event.lengthComputable) {
       const percent = Math.round((event.loaded / event.total) * 100);
       uploadProgress.value = percent;
-      uploadProgress.style.display = 'block';
+      uploadPercent.textContent = percent + '%';
     }
   };
   xhr.onload = function () {
-    uploadProgress.style.display = 'none';
+    setTimeout(() => {
+      uploadProgress.style.display = 'none';
+      uploadProgress.value = 0;
+      uploadPercent.style.display = 'none';
+      uploadPercent.textContent = '';
+    }, 300);
     if (xhr.status >= 200 && xhr.status < 300) {
       resultDiv.textContent = 'Data sent successfully!';
     } else {
@@ -51,7 +60,12 @@ sendForm.onsubmit = (e) => {
     }
   };
   xhr.onerror = function () {
-    uploadProgress.style.display = 'none';
+    setTimeout(() => {
+      uploadProgress.style.display = 'none';
+      uploadProgress.value = 0;
+      uploadPercent.style.display = 'none';
+      uploadPercent.textContent = '';
+    }, 300);
     errorDiv.textContent = 'Network error.';
   };
   xhr.send(formData);
