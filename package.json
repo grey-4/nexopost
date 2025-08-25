@@ -1,5 +1,5 @@
 {
-  "name": "data-sharing-app",
+  "name": "nexopost",
   "version": "1.0.0",
   "description": "A simple application for sharing data between two devices.",
   "main": "src/app.ts",
