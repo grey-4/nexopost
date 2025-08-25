@@ -15,6 +15,8 @@ const resultDiv = document.getElementById('result');
 const errorDiv = document.getElementById('error');
 const receiveBtn = document.getElementById('receiveBtn');
 const uploadProgress = document.getElementById('uploadProgress');
+const textBlock = document.getElementById('textBlock');
+const copyBtn = document.getElementById('copyBtn');
 const uploadPercent = document.getElementById('uploadPercent');
 
 sendForm.onsubmit = (e) => {
@@ -74,6 +76,8 @@ sendForm.onsubmit = (e) => {
 receiveBtn.onclick = async () => {
   resultDiv.textContent = '';
   errorDiv.textContent = '';
+  textBlock.style.display = 'none';
+  copyBtn.style.display = 'none';
   try {
     const res = await fetch(apiBase + '/receive', { method: 'POST' });
     const data = await res.json();
@@ -87,12 +91,28 @@ receiveBtn.onclick = async () => {
         resultDiv.innerHTML = '';
         resultDiv.appendChild(link);
       } else {
-        resultDiv.textContent = 'Received: ' + JSON.stringify(data.data.content);
+        // Show copiable text block
+        let text = data.data.content;
+        if (typeof text !== 'string') text = JSON.stringify(text, null, 2);
+        textBlock.textContent = text;
+        textBlock.style.display = 'block';
+        copyBtn.style.display = 'inline-block';
+        resultDiv.textContent = 'Received text:';
       }
     } else {
       errorDiv.textContent = data.message || 'No data available.';
     }
   } catch (err) {
     errorDiv.textContent = 'Network error.';
+  }
+};
+
+copyBtn.onclick = () => {
+  if (textBlock.style.display !== 'none') {
+    navigator.clipboard.writeText(textBlock.textContent)
+      .then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy Text'; }, 1200);
+      });
   }
 };
